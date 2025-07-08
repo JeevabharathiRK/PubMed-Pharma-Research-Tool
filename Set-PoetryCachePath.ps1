@@ -1,0 +1,1 @@
+$env:POETRY_CACHE_DIR = "$PWD\.poetry-cache"
