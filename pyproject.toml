@@ -1,0 +1,17 @@
+[project]
+name = "pubmed-papers"
+version = "0.1.0"
+description = "Python package designed to fetch research papers specifically from the PubMed API. Its primary purpose is to identify papers that have at least one author affiliated with a pharmaceutical or biotech company."
+authors = [
+    {name = "JeevabharathiRK",email = "jeevabharathirk@gmail.com"}
+]
+license = {text = "MIT Licenses"}
+readme = "README.md"
+requires-python = ">=3.13"
+dependencies = [
+]
+
+
+[build-system]
+requires = ["poetry-core>=2.0.0,<3.0.0"]
+build-backend = "poetry.core.masonry.api"
