@@ -1,9 +1,11 @@
+# src/pubmed_papers/pipe/pupmed.py
+
 import xml.etree.ElementTree as ET
 from datetime import datetime
 import requests
 import time
 
-def fetch_all_pmids(query, batch_size=1000):
+def fetch_pmids(query, batch_size=1000):
     base_url = "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esearch.fcgi"
     params = {
         "db": "pubmed",
@@ -33,8 +35,8 @@ def fetch_all_pmids(query, batch_size=1000):
 
     return all_pmids
 
-# --- Date Parser ---
-def parse_pub_date(article_node):
+# --- Utility [Date parser] ---
+def parse_date(article_node):
     month_map = {
         'Jan': '01', 'Feb': '02', 'Mar': '03', 'Apr': '04',
         'May': '05', 'Jun': '06', 'Jul': '07', 'Aug': '08',
@@ -66,8 +68,7 @@ def parse_pub_date(article_node):
 
     return "1900-01-01"
 
-# --- Batch Fetcher ---
-def fetch_pubmed_metadata_batch(pubmed_ids, batch_size=100):
+def fetch_metadata(pubmed_ids, batch_size=100):
     #param: PubMed ID (PMID) to fetch metadata for
     #return: Dictionary containing metadata for the article
     all_metadata = []
@@ -93,7 +94,7 @@ def fetch_pubmed_metadata_batch(pubmed_ids, batch_size=100):
         for article in root.findall(".//PubmedArticle"):
             pmid = article.findtext(".//PMID")
             title = article.findtext(".//ArticleTitle")
-            pub_date = parse_pub_date(article)
+            pub_date = parse_date(article)
 
             authors = []
             for author in article.findall(".//AuthorList/Author"):

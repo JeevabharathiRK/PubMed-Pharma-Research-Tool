@@ -1,11 +1,9 @@
-# pubmed_papers/main.py
+# src/pubmed_papers/main.py
 
+from pubmed_papers.pipe.controller import PubMedController
 import argparse
 import sys
-
-#Custom packages
-from pubmed_papers.pipe.pupmed import fetch_all_pmids
-from pubmed_papers.pipe.pupmed import fetch_pubmed_metadata_batch
+import json
 
 def main():
     parser = argparse.ArgumentParser(description="Search PubMed papers.")
@@ -20,9 +18,11 @@ def main():
         print(f"[DEBUG] Query: {args.query}", file=sys.stderr)
         if args.file:
             print(f"[DEBUG] Will write to file: {args.file}", file=sys.stderr)
-
+    
+    # Initialize the PubMed controller with the query
+    controller = PubMedController(args.query)
     # Dummy result simulation
-    result = f"Results for PubMed query: {fetch_pubmed_metadata_batch(fetch_all_pmids(args.query))}\n"
+    result = json.dumps(controller.results(args.query), indent=2)
 
     if args.file:
         try:
