@@ -3,6 +3,10 @@
 import argparse
 import sys
 
+#Custom packages
+from pubmed_papers.pipe.pupmed import fetch_all_pmids
+from pubmed_papers.pipe.pupmed import fetch_pubmed_metadata_batch
+
 def main():
     parser = argparse.ArgumentParser(description="Search PubMed papers.")
 
@@ -18,7 +22,7 @@ def main():
             print(f"[DEBUG] Will write to file: {args.file}", file=sys.stderr)
 
     # Dummy result simulation
-    result = f"Results for PubMed query: {args.query}"
+    result = f"Results for PubMed query: {fetch_pubmed_metadata_batch(fetch_all_pmids(args.query))}\n"
 
     if args.file:
         try:
