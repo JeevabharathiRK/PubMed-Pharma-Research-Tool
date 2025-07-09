@@ -1,7 +1,9 @@
-# pubmed_papers/main.py
+# src/pubmed_papers/main.py
 
+from pubmed_papers.pipe.controller import PubMedController
 import argparse
 import sys
+import json
 
 def main():
     parser = argparse.ArgumentParser(description="Search PubMed papers.")
@@ -16,9 +18,11 @@ def main():
         print(f"[DEBUG] Query: {args.query}", file=sys.stderr)
         if args.file:
             print(f"[DEBUG] Will write to file: {args.file}", file=sys.stderr)
-
+    
+    # Initialize the PubMed controller with the query
+    controller = PubMedController(args.query)
     # Dummy result simulation
-    result = f"Results for PubMed query: {args.query}"
+    result = json.dumps(controller.results(args.query), indent=2)
 
     if args.file:
         try:
