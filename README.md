@@ -40,13 +40,13 @@ A Python command-line tool to fetch, filter, and export PubMed research papers w
 Before running the tool, you must set your environment variables for LLM-based filtering (such as your LLM API key).
 
 - **On Windows:**  
-  Use the provided `set-envs.ps1` script:
+  Edit the provided `set-envs.ps1` and run the script:
   ```powershell
   .\set-envs.ps1
   ```
 
 - **On Mac/Linux:**  
-  Use the provided `set-envs.sh` script:
+  Edit the provided `set-envs.sh` and run the script:
   ```sh
   source set-envs.sh
   ```
