@@ -1,3 +1,3 @@
 $env:POETRY_CACHE_DIR = "$PWD\.poetry-cache"
-#Paste your GroqCloude API key below
-$env:GROQ_API_KEY = 
+#Paste your GroqCloud API key below
+$env:GROQ_API_KEY ="YOUR_GROQ_API_KEY_HERE"
