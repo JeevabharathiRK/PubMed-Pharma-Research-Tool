@@ -4,8 +4,14 @@ import xml.etree.ElementTree as ET
 from datetime import datetime
 import requests
 import time
+from typing import List, Dict, Any
+from pubmed_papers.utils import DebugUtil
 
-def fetch_pmids(query, batch_size=1000):
+def fetch_pmids(query: str, batch_size: int = 1000) -> List[str]:
+    """
+    Fetch PubMed IDs (PMIDs) for a given query.
+    Returns a list of PMIDs.
+    """
     base_url = "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esearch.fcgi"
     params = {
         "db": "pubmed",
@@ -15,28 +21,41 @@ def fetch_pmids(query, batch_size=1000):
         "retmax": 0
     }
 
-    # Step 1: Get total count
-    response = requests.get(base_url, params=params)
-    data = response.json()
-    total = int(data['esearchresult']['count'])
-    print(f"Total results: {total}")
+    try:
+        # Step 1: Get total count
+        response = requests.get(base_url, params=params)
+        response.raise_for_status()
+        data = response.json()
+        total = int(data['esearchresult']['count'])
+        DebugUtil.debug_print(f"Total results: {total}")
+    except Exception as e:
+        DebugUtil.debug_print(f"Error fetching total count: {e}")
+        return []
 
-    all_pmids = []
+    all_pmids: List[str] = []
 
     # Step 2: Fetch in batches
     for start in range(0, total, batch_size):
-        print(f"Fetching {start} to {start + batch_size}")
+        DebugUtil.debug_print(f"Fetching {start} to {start + batch_size}")
         params.update({"retstart": start, "retmax": batch_size})
-        response = requests.get(base_url, params=params)
-        data = response.json()
-        pmids = data['esearchresult']['idlist']
-        all_pmids.extend(pmids)
+        try:
+            response = requests.get(base_url, params=params)
+            response.raise_for_status()
+            data = response.json()
+            pmids = data['esearchresult']['idlist']
+            all_pmids.extend(pmids)
+        except Exception as e:
+            DebugUtil.debug_print(f"Failed to fetch PMIDs batch starting at {start}: {e}")
+            continue
         time.sleep(0.34)  # Be nice to NCBI (max 3 requests/second)
 
     return all_pmids
 
-# --- Utility [Date parser] ---
-def parse_date(article_node):
+def parse_date(article_node: ET.Element) -> str:
+    """
+    Parse the publication date from an article XML node.
+    Returns a date string in YYYY-MM-DD format.
+    """
     month_map = {
         'Jan': '01', 'Feb': '02', 'Mar': '03', 'Apr': '04',
         'May': '05', 'Jun': '06', 'Jul': '07', 'Aug': '08',
@@ -68,10 +87,12 @@ def parse_date(article_node):
 
     return "1900-01-01"
 
-def fetch_metadata(pubmed_ids, batch_size=100):
-    #param: PubMed ID (PMID) to fetch metadata for
-    #return: Dictionary containing metadata for the article
-    all_metadata = []
+def fetch_metadata(pubmed_ids: List[str], batch_size: int = 100) -> List[Dict[str, Any]]:
+    """
+    Fetch metadata for a list of PubMed IDs.
+    Returns a list of dictionaries containing metadata for each article.
+    """
+    all_metadata: List[Dict[str, Any]] = []
 
     for i in range(0, len(pubmed_ids), batch_size):
         batch = pubmed_ids[i:i + batch_size]
@@ -84,32 +105,39 @@ def fetch_metadata(pubmed_ids, batch_size=100):
             "retmode": "xml"
         }
 
-        response = requests.get(url, params=params)
-        if response.status_code != 200:
-            print(f"Failed to fetch batch starting at index {i}")
+        try:
+            response = requests.get(url, params=params)
+            if response.status_code != 200:
+                DebugUtil.debug_print(f"Failed to fetch batch starting at index {i}")
+                continue
+            root = ET.fromstring(response.content)
+        except Exception as e:
+            DebugUtil.debug_print(f"Error fetching or parsing metadata batch at index {i}: {e}")
             continue
 
-        root = ET.fromstring(response.content)
-
         for article in root.findall(".//PubmedArticle"):
-            pmid = article.findtext(".//PMID")
-            title = article.findtext(".//ArticleTitle")
-            pub_date = parse_date(article)
+            try:
+                pmid = article.findtext(".//PMID")
+                title = article.findtext(".//ArticleTitle")
+                pub_date = parse_date(article)
 
-            authors = []
-            for author in article.findall(".//AuthorList/Author"):
-                last = author.findtext("LastName", "")
-                first = author.findtext("ForeName", "")
-                name = f"{first} {last}".strip()
-                aff = author.findtext(".//Affiliation", "")
-                authors.append({"name": name, "affiliation": aff})
+                authors = []
+                for author in article.findall(".//AuthorList/Author"):
+                    last = author.findtext("LastName", "")
+                    first = author.findtext("ForeName", "")
+                    name = f"{first} {last}".strip()
+                    aff = author.findtext(".//Affiliation", "")
+                    authors.append({"name": name, "affiliation": aff})
 
-            all_metadata.append({
-                "pubmed_id": pmid,
-                "title": title,
-                "publication_date": pub_date,
-                "authors": authors
-            })
+                all_metadata.append({
+                    "pubmed_id": pmid,
+                    "title": title,
+                    "publication_date": pub_date,
+                    "authors": authors
+                })
+            except Exception as e:
+                DebugUtil.debug_print(f"Error parsing article metadata: {e}")
+                continue
 
         time.sleep(0.34)  # Respect NCBI rate limits (3 requests/sec)
 
