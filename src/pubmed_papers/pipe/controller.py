@@ -23,7 +23,7 @@ class PubMedController:
                 DebugUtil.debug_print("No PMIDs found for the query.")
                 return []
         except Exception as e:
-            DebugUtil.debug_print(f"Error fetching PMIDs: {e}")
+            DebugUtil.debug_print(f"Error fetching PMIDs: {e}", error=True)
             return []
 
         try:
@@ -31,7 +31,7 @@ class PubMedController:
             metadata = fetch_metadata(pmids)
             DebugUtil.debug_print(f"Fetched metadata for {len(metadata)} papers.")
         except Exception as e:
-            DebugUtil.debug_print(f"Error fetching metadata: {e}")
+            DebugUtil.debug_print(f"Error fetching metadata: {e}", error=True)
             return []
 
         try:
@@ -39,7 +39,7 @@ class PubMedController:
             filtered_papers = filter_biotech_papers(metadata)
             DebugUtil.debug_print(f"Filtered papers, {len(filtered_papers)} matched.")
         except Exception as e:
-            DebugUtil.debug_print(f"Error filtering papers: {e}")
+            DebugUtil.debug_print(f"Error filtering papers: {e}", error=True)
             return []
 
         # Ensure always a list

@@ -18,7 +18,7 @@ def filter_biotech_papers(papers: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
         matched, un_matched = keymatch.get_filter(papers)
         DebugUtil.debug_print(f"Layer 1 matched: {len(matched)}, unmatched: {len(un_matched)}")
     except Exception as e:
-        DebugUtil.debug_print(f"Error in KeyMatch filtering: {e}")
+        DebugUtil.debug_print(f"Error in KeyMatch filtering: {e}", error=True)
         return []
 
     # If all papers matched in layer 1, return them
@@ -30,7 +30,7 @@ def filter_biotech_papers(papers: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
         llm_matched = filter_industry_papers_llama3(un_matched)
         DebugUtil.debug_print(f"Layer 2 LLM matched: {len(llm_matched)}")
     except Exception as e:
-        DebugUtil.debug_print(f"Error in LLM filtering: {e}")
+        DebugUtil.debug_print(f"Error in LLM filtering: {e}", error=True)
         llm_matched = []
 
     return matched + llm_matched

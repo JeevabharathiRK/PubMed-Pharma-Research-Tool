@@ -29,7 +29,7 @@ def fetch_pmids(query: str, batch_size: int = 1000) -> List[str]:
         total = int(data['esearchresult']['count'])
         DebugUtil.debug_print(f"Total results: {total}")
     except Exception as e:
-        DebugUtil.debug_print(f"Error fetching total count: {e}")
+        DebugUtil.debug_print(f"Error fetching total count: {e}", error=True)
         return []
 
     all_pmids: List[str] = []
@@ -45,7 +45,7 @@ def fetch_pmids(query: str, batch_size: int = 1000) -> List[str]:
             pmids = data['esearchresult']['idlist']
             all_pmids.extend(pmids)
         except Exception as e:
-            DebugUtil.debug_print(f"Failed to fetch PMIDs batch starting at {start}: {e}")
+            DebugUtil.debug_print(f"Failed to fetch PMIDs batch starting at {start}: {e}", error=True)
             continue
         time.sleep(0.34)  # Be nice to NCBI (max 3 requests/second)
 
@@ -112,7 +112,7 @@ def fetch_metadata(pubmed_ids: List[str], batch_size: int = 100) -> List[Dict[st
                 continue
             root = ET.fromstring(response.content)
         except Exception as e:
-            DebugUtil.debug_print(f"Error fetching or parsing metadata batch at index {i}: {e}")
+            DebugUtil.debug_print(f"Error fetching or parsing metadata batch at index {i}: {e}", error=True)
             continue
 
         for article in root.findall(".//PubmedArticle"):
@@ -136,7 +136,7 @@ def fetch_metadata(pubmed_ids: List[str], batch_size: int = 100) -> List[Dict[st
                     "authors": authors
                 })
             except Exception as e:
-                DebugUtil.debug_print(f"Error parsing article metadata: {e}")
+                DebugUtil.debug_print(f"Error parsing article metadata: {e}", error=True)
                 continue
 
         time.sleep(0.34)  # Respect NCBI rate limits (3 requests/sec)

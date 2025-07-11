@@ -89,10 +89,10 @@ def filter_industry_papers_llama3(papers: List[Dict]) -> List[Dict]:
                 results = json.loads(json_str)
                 matched_papers.extend(results)
             except Exception as e:
-                DebugUtil.debug_print(f"Failed to parse LLM response: {e}")
+                DebugUtil.debug_print(f"Failed to parse LLM response: {e}", error=True)
                 continue
         except Exception as e:
-            DebugUtil.debug_print(f"Error during LLM API call: {e}")
+            DebugUtil.debug_print(f"Error during LLM API call: {e}", error=True)
             continue
         time.sleep(3)  # Throttle to stay under 30 requests/min
 

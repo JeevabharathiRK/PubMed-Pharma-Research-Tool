@@ -42,6 +42,38 @@ def save_results_csv(papers: List[Dict[str, Any]], filename: str) -> None:
                 emails[0] if emails else ""
             ])
 
+def print_readable(papers: List[Dict[str, Any]]) -> None:
+    """
+    Print a human-readable summary of the papers.
+    """
+    if not papers:
+        print("No Matched papers found.")
+        return
+    print("Matched papers ↓")
+    print("-" * 40)
+    for paper in papers:
+        pubmed_id = paper.get("pubmed_id", "")
+        title = paper.get("title", "")
+        pub_date = paper.get("publication_date", "")
+        authors = paper.get("authors", [])
+        non_acad_authors = []
+        companies = []
+        emails = []
+        for author in authors:
+            aff = author.get("affiliation", {})
+            if aff.get("company"):
+                non_acad_authors.append(author.get("name", ""))
+                companies.append(aff.get("company", ""))
+                if aff.get("email", "none") != "none":
+                    emails.append(aff.get("email"))
+        print(f"PubmedID: {pubmed_id}")
+        print(f"Title: {title}")
+        print(f"Publication Date: {pub_date}")
+        print(f"Non-academic Author(s): {', '.join(non_acad_authors)}")
+        print(f"Company Affiliation(s): {', '.join(companies)}")
+        print(f"Corresponding Author Email: {emails[0] if emails else ''}")
+        print("-" * 40)
+
 def main() -> None:
     """
     Main entry point for the command-line PubMed paper search tool.
@@ -71,18 +103,18 @@ def main() -> None:
         save_results_csv(papers, args.file)
         DebugUtil.debug_print(f"Saved results to {args.file}")
     else:
-        # Save as JSON or print to console
-        result = json.dumps(papers, indent=2)
+        # Save as JSON or print human-readable summary to console
         if args.file:
+            result = json.dumps(papers, indent=2)
             try:
                 with open(args.file, 'w', encoding='utf-8') as f:
                     f.write(result)
                 DebugUtil.debug_print(f"Saved results to {args.file}")
             except Exception as e:
-                print(f"Error saving to file: {e}", file=sys.stderr)
+                DebugUtil.debug_print(f"Error saving to file: {e}", error=True)
                 sys.exit(1)
         else:
-            print(result)
+            print_readable(papers)
 
 if __name__ == "__main__":
     main()

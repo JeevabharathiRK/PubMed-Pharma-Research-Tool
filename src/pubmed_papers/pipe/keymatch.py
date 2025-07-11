@@ -70,7 +70,7 @@ class KeyMatch:
                             }
                         })
             except Exception as e:
-                DebugUtil.debug_print(f"Error processing paper '{paper.get('pubmed_id', '')}': {e}")
+                DebugUtil.debug_print(f"Error processing paper '{paper.get('pubmed_id', '')}': {e}", error=True)
                 continue
 
             if matched_authors:
